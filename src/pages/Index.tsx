@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Send } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ChatMessage from "@/components/ChatMessage";
 import VoiceWaveAnimation from "@/components/VoiceWaveAnimation";
+import ChatHeader from "@/components/ChatHeader";
+import SettingsDialog from "@/components/SettingsDialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
   role: "user" | "assistant";
@@ -18,10 +21,15 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [voiceRate, setVoiceRate] = useState(1);
+  const [voicePitch, setVoicePitch] = useState(1);
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     // Initialize speech synthesis
@@ -73,18 +81,40 @@ const Index = () => {
   }, [messages]);
 
   const speak = (text: string) => {
-    if (synthRef.current) {
+    if (synthRef.current && autoSpeak) {
       synthRef.current.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1;
-      utterance.pitch = 1;
+      utterance.rate = voiceRate;
+      utterance.pitch = voicePitch;
       utterance.volume = 1;
       
       utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        currentUtteranceRef.current = null;
+      };
       
+      currentUtteranceRef.current = utterance;
       synthRef.current.speak(utterance);
     }
+  };
+
+  const stopSpeaking = () => {
+    if (synthRef.current) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+      currentUtteranceRef.current = null;
+    }
+  };
+
+  const handleRefresh = () => {
+    setMessages([]);
+    setInputValue("");
+    stopSpeaking();
+    toast({
+      title: "Chat cleared",
+      description: "Starting a fresh conversation.",
+    });
   };
 
   const toggleListening = () => {
@@ -140,7 +170,9 @@ const Index = () => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      speak(data.response);
+      if (autoSpeak) {
+        speak(data.response);
+      }
     } catch (error) {
       console.error("Error:", error);
       toast({
@@ -164,12 +196,10 @@ const Index = () => {
 
       <div className="relative z-10 flex flex-col h-screen max-w-4xl mx-auto p-4">
         {/* Header */}
-        <div className="text-center py-6">
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-            AI Assistant
-          </h1>
-          <p className="text-muted-foreground">Your personal voice-enabled assistant</p>
-        </div>
+        <ChatHeader 
+          onRefresh={handleRefresh}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
 
         {/* Voice Wave Visualization */}
         <div className="flex-shrink-0 py-8">
@@ -177,26 +207,28 @@ const Index = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center space-y-4 backdrop-blur-md bg-card/40 border border-border/50 rounded-3xl p-8">
-                <div className="w-20 h-20 mx-auto bg-gradient-primary rounded-full flex items-center justify-center shadow-glow-primary">
-                  <Mic className="w-10 h-10 text-primary-foreground" />
+        <ScrollArea className="flex-1 mb-4 pr-4">
+          <div className="space-y-4">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <div className="text-center space-y-4 backdrop-blur-md bg-card/40 border border-border/50 rounded-3xl p-8">
+                  <div className="w-20 h-20 mx-auto bg-gradient-primary rounded-full flex items-center justify-center shadow-glow-primary">
+                    <Mic className="w-10 h-10 text-primary-foreground" />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-foreground">Ready to assist</h2>
+                  <p className="text-muted-foreground max-w-md">
+                    Tap the microphone to speak or type your question below
+                  </p>
                 </div>
-                <h2 className="text-2xl font-semibold text-foreground">Ready to assist</h2>
-                <p className="text-muted-foreground max-w-md">
-                  Tap the microphone to speak or type your question below
-                </p>
               </div>
-            </div>
-          ) : (
-            messages.map((msg, idx) => (
-              <ChatMessage key={idx} role={msg.role} content={msg.content} />
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+            ) : (
+              messages.map((msg, idx) => (
+                <ChatMessage key={idx} role={msg.role} content={msg.content} />
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
 
         {/* Input area */}
         <div className="flex-shrink-0 backdrop-blur-md bg-card/60 border border-border/50 rounded-3xl p-4 shadow-xl">
@@ -217,6 +249,17 @@ const Index = () => {
                 <Mic className="w-6 h-6" />
               )}
             </Button>
+
+            {isSpeaking && (
+              <Button
+                onClick={stopSpeaking}
+                variant="outline"
+                size="icon"
+                className="rounded-full w-14 h-14 flex-shrink-0 bg-destructive/20 border-destructive/50 hover:bg-destructive/30"
+              >
+                <VolumeX className="w-6 h-6" />
+              </Button>
+            )}
             
             <Input
               value={inputValue}
@@ -238,6 +281,18 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Settings Dialog */}
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        voiceRate={voiceRate}
+        voicePitch={voicePitch}
+        onVoiceRateChange={setVoiceRate}
+        onVoicePitchChange={setVoicePitch}
+        onClearHistory={handleRefresh}
+        messages={messages}
+      />
     </div>
   );
 };
