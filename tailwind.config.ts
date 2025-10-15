@@ -82,12 +82,28 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": {
-            opacity: "1",
-            transform: "scale(1)",
+            opacity: "0.4",
           },
           "50%": {
             opacity: "0.8",
-            transform: "scale(1.05)",
+          },
+        },
+        "shimmer": {
+          "0%": {
+            backgroundPosition: "-200% 0",
+          },
+          "100%": {
+            backgroundPosition: "200% 0",
+          },
+        },
+        "bounce-slow": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+            animationTimingFunction: "cubic-bezier(0.8, 0, 1, 1)",
+          },
+          "50%": {
+            transform: "translateY(-10%)",
+            animationTimingFunction: "cubic-bezier(0, 0, 0.2, 1)",
           },
         },
         "wave": {
@@ -110,9 +126,11 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-        "wave": "wave 1s ease-in-out infinite",
-        "gradient-shift": "gradient-shift 3s ease infinite",
+        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
+        "wave": "wave 1.5s ease-in-out infinite",
+        "gradient-shift": "gradient-shift 15s ease infinite",
+        "shimmer": "shimmer 3s linear infinite",
+        "bounce-slow": "bounce-slow 3s infinite",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -122,6 +140,7 @@ export default {
       boxShadow: {
         "glow-primary": "var(--glow-primary)",
         "glow-accent": "var(--glow-accent)",
+        "glow-strong": "var(--glow-strong)",
       },
     },
   },

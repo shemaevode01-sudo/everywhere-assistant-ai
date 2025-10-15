@@ -11,18 +11,18 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
   const isUser = role === "user";
 
   return (
-    <div className={`flex gap-4 ${isUser ? "justify-end" : "justify-start"} animate-fade-in`}>
+    <div className={`flex gap-4 ${isUser ? "justify-end" : "justify-start"} animate-fade-in group`}>
       {!isUser && (
-        <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-glow-primary">
+        <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-glow-primary group-hover:scale-110 transition-transform duration-300">
           <Bot className="w-5 h-5 text-primary-foreground" />
         </div>
       )}
       
       <div
-        className={`max-w-[70%] rounded-3xl px-6 py-4 backdrop-blur-md border border-border/50 ${
+        className={`max-w-[70%] rounded-3xl px-6 py-4 backdrop-blur-md border border-border/50 transition-all duration-300 hover:scale-[1.02] ${
           isUser
-            ? "bg-primary/20 text-foreground shadow-glow-primary"
-            : "bg-card/60 text-foreground shadow-glow-accent"
+            ? "bg-primary/20 text-foreground shadow-glow-primary hover:shadow-glow-strong"
+            : "bg-card/60 text-foreground shadow-glow-accent hover:shadow-glow-primary"
         }`}
       >
         {isUser ? (
@@ -59,7 +59,7 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
       </div>
 
       {isUser && (
-        <div className="w-10 h-10 rounded-full bg-gradient-accent flex items-center justify-center flex-shrink-0 shadow-glow-accent">
+        <div className="w-10 h-10 rounded-full bg-gradient-accent flex items-center justify-center flex-shrink-0 shadow-glow-accent group-hover:scale-110 transition-transform duration-300">
           <User className="w-5 h-5 text-accent-foreground" />
         </div>
       )}

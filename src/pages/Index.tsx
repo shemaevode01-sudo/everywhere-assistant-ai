@@ -48,7 +48,7 @@ const Index = () => {
         const transcript = event.results[0][0].transcript;
         setInputValue(transcript);
         setIsListening(false);
-        handleSend(transcript);
+        handleSend(transcript, 'voice');
       };
 
       recognitionRef.current.onerror = (event: any) => {
@@ -145,7 +145,7 @@ const Index = () => {
     }
   };
 
-  const handleSend = async (textToSend?: string) => {
+  const handleSend = async (textToSend?: string, inputMethod: 'voice' | 'text' = 'text') => {
     const messageText = textToSend || inputValue.trim();
     if (!messageText || isLoading) return;
 
@@ -170,7 +170,9 @@ const Index = () => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      if (autoSpeak) {
+      
+      // Only speak if input was via voice
+      if (inputMethod === 'voice') {
         speak(data.response);
       }
     } catch (error) {
@@ -187,18 +189,23 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated background */}
+      {/* Animated background mesh gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/20 animate-gradient-shift bg-[length:200%_200%]" />
       
-      {/* Glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[100px] animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/30 rounded-full blur-[100px] animate-pulse-glow" style={{ animationDelay: "1s" }} />
+      {/* Floating orbs with different animations */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[120px] animate-pulse-glow animate-float" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/30 rounded-full blur-[120px] animate-pulse-glow animate-float-delayed" />
+      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-primary/20 animate-morph blur-[80px]" style={{ animationDelay: "3s" }} />
+      
+      {/* Shimmer overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer bg-[length:200%_100%]" />
 
       <div className="relative z-10 flex flex-col h-screen max-w-4xl mx-auto p-4">
         {/* Header */}
         <ChatHeader 
           onRefresh={handleRefresh}
           onOpenSettings={() => setSettingsOpen(true)}
+          onNewChat={handleRefresh}
         />
 
         {/* Voice Wave Visualization */}
@@ -211,11 +218,11 @@ const Index = () => {
           <div className="space-y-4">
             {messages.length === 0 ? (
               <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center space-y-4 backdrop-blur-md bg-card/40 border border-border/50 rounded-3xl p-8">
-                  <div className="w-20 h-20 mx-auto bg-gradient-primary rounded-full flex items-center justify-center shadow-glow-primary">
+                <div className="text-center space-y-4 backdrop-blur-md bg-card/40 border border-border/50 rounded-3xl p-8 animate-fade-in">
+                  <div className="w-20 h-20 mx-auto bg-gradient-primary rounded-full flex items-center justify-center shadow-glow-primary animate-bounce-slow">
                     <Mic className="w-10 h-10 text-primary-foreground" />
                   </div>
-                  <h2 className="text-2xl font-semibold text-foreground">Ready to assist</h2>
+                  <h2 className="text-2xl font-semibold text-foreground bg-gradient-primary bg-clip-text text-transparent">Ready to assist</h2>
                   <p className="text-muted-foreground max-w-md">
                     Tap the microphone to speak or type your question below
                   </p>
@@ -231,20 +238,20 @@ const Index = () => {
         </ScrollArea>
 
         {/* Input area */}
-        <div className="flex-shrink-0 backdrop-blur-md bg-card/60 border border-border/50 rounded-3xl p-4 shadow-xl">
+        <div className="flex-shrink-0 backdrop-blur-md bg-card/60 border border-border/50 rounded-3xl p-4 shadow-xl hover:shadow-glow-primary transition-all duration-300">
           <div className="flex gap-3">
             <Button
               onClick={toggleListening}
               disabled={isLoading}
-              className={`rounded-full w-14 h-14 flex-shrink-0 transition-all duration-300 ${
+              className={`rounded-full w-14 h-14 flex-shrink-0 transition-all duration-300 hover:scale-110 ${
                 isListening
-                  ? "bg-accent text-accent-foreground shadow-glow-accent"
+                  ? "bg-accent text-accent-foreground shadow-glow-accent animate-pulse"
                   : "bg-primary text-primary-foreground shadow-glow-primary hover:shadow-glow-accent"
               }`}
               size="icon"
             >
               {isListening ? (
-                <MicOff className="w-6 h-6" />
+                <MicOff className="w-6 h-6 animate-pulse" />
               ) : (
                 <Mic className="w-6 h-6" />
               )}
@@ -273,7 +280,7 @@ const Index = () => {
             <Button
               onClick={() => handleSend()}
               disabled={isLoading || !inputValue.trim() || isListening}
-              className="rounded-full w-14 h-14 flex-shrink-0 bg-gradient-accent text-accent-foreground shadow-glow-accent hover:opacity-90 transition-opacity"
+              className="rounded-full w-14 h-14 flex-shrink-0 bg-gradient-accent text-accent-foreground shadow-glow-accent hover:opacity-90 hover:scale-110 transition-all duration-300"
               size="icon"
             >
               <Send className="w-6 h-6" />

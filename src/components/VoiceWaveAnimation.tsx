@@ -3,19 +3,25 @@ interface VoiceWaveAnimationProps {
 }
 
 const VoiceWaveAnimation = ({ isActive }: VoiceWaveAnimationProps) => {
-  const bars = Array.from({ length: 5 });
-
   return (
-    <div className="flex items-center justify-center gap-1.5 h-16">
-      {bars.map((_, i) => (
+    <div className="flex items-center justify-center h-32 gap-1.5 relative">
+      {/* Outer glow effect */}
+      {isActive && (
+        <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse-glow" />
+      )}
+      
+      {/* Wave bars */}
+      {[...Array(12)].map((_, i) => (
         <div
           key={i}
-          className={`w-1.5 rounded-full bg-gradient-accent transition-all duration-300 ${
-            isActive ? "animate-wave" : "h-4"
+          className={`w-1.5 rounded-full transition-all duration-300 relative ${
+            isActive 
+              ? "animate-wave bg-gradient-to-t from-primary via-accent to-primary shadow-glow-primary" 
+              : "h-3 bg-primary/40"
           }`}
           style={{
-            animationDelay: `${i * 0.1}s`,
-            height: isActive ? undefined : "1rem",
+            animationDelay: `${i * 0.08}s`,
+            height: isActive ? undefined : "0.75rem",
           }}
         />
       ))}
