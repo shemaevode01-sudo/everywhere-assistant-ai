@@ -213,31 +213,6 @@ const Index = () => {
           onNewChat={handleRefresh}
         />
 
-        {/* AI Mode Selector */}
-        <div className="flex-shrink-0 mt-4 mb-2">
-          <Tabs value={aiMode} onValueChange={(value) => setAIMode(value as AIMode)} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 backdrop-blur-md bg-card/60 border border-border/50 rounded-2xl p-1">
-              <TabsTrigger 
-                value="general" 
-                className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
-              >
-                General AI
-              </TabsTrigger>
-              <TabsTrigger 
-                value="therapy" 
-                className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
-              >
-                Therapy Mode
-              </TabsTrigger>
-              <TabsTrigger 
-                value="ideas" 
-                className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
-              >
-                Ideas Generator
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
 
         {/* Voice Wave Visualization */}
         <div className="flex-shrink-0 py-6">
@@ -267,7 +242,12 @@ const Index = () => {
               </div>
             ) : (
               messages.map((msg, idx) => (
-                <ChatMessage key={idx} role={msg.role} content={msg.content} />
+                <ChatMessage 
+                  key={idx} 
+                  role={msg.role} 
+                  content={msg.content}
+                  isLatest={idx === messages.length - 1}
+                />
               ))
             )}
             <div ref={messagesEndRef} />
@@ -276,6 +256,32 @@ const Index = () => {
 
         {/* Input area */}
         <div className="flex-shrink-0 backdrop-blur-md bg-card/60 border border-border/50 rounded-3xl p-5 shadow-xl hover:shadow-glow-primary transition-all duration-300">
+          {/* AI Mode Selector - Compact */}
+          <div className="mb-3">
+            <Tabs value={aiMode} onValueChange={(value) => setAIMode(value as AIMode)} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 backdrop-blur-md bg-background/50 border border-border/30 rounded-xl p-0.5 h-8">
+                <TabsTrigger 
+                  value="general" 
+                  className="rounded-lg text-xs data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                >
+                  General
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="therapy" 
+                  className="rounded-lg text-xs data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                >
+                  Therapy
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ideas" 
+                  className="rounded-lg text-xs data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                >
+                  Ideas
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="flex gap-4">
             <Button
               onClick={toggleListening}

@@ -1,17 +1,36 @@
 import { User, Bot } from "lucide-react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import CodeBlock from "./CodeBlock";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
+  isLatest?: boolean;
 }
 
-const ChatMessage = ({ role, content }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isLatest = false }: ChatMessageProps) => {
   const isUser = role === "user";
+  const [displayedContent, setDisplayedContent] = useState(isUser || !isLatest ? content : "");
+  
+  useEffect(() => {
+    if (!isUser && isLatest && displayedContent !== content) {
+      let index = 0;
+      const timer = setInterval(() => {
+        if (index < content.length) {
+          setDisplayedContent(content.slice(0, index + 1));
+          index++;
+        } else {
+          clearInterval(timer);
+        }
+      }, 20); // 20ms per character for smooth typing
+      
+      return () => clearInterval(timer);
+    }
+  }, [content, isUser, isLatest, displayedContent]);
 
   return (
-    <div className={`flex gap-4 ${isUser ? "justify-end" : "justify-start"} animate-fade-in group`}>
+    <div className={`flex gap-4 ${isUser ? "justify-end" : "justify-start"} animate-fade-in group w-full`}>
       {!isUser && (
         <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-glow-primary group-hover:scale-110 transition-transform duration-300">
           <Bot className="w-5 h-5 text-primary-foreground" />
@@ -19,7 +38,7 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
       )}
       
       <div
-        className={`max-w-[70%] rounded-3xl px-6 py-4 backdrop-blur-md border border-border/50 transition-all duration-300 hover:scale-[1.02] ${
+        className={`w-full rounded-3xl px-6 py-4 backdrop-blur-md border border-border/50 transition-all duration-300 hover:scale-[1.01] ${
           isUser
             ? "bg-primary/20 text-foreground shadow-glow-primary hover:shadow-glow-strong"
             : "bg-card/60 text-foreground shadow-glow-accent hover:shadow-glow-primary"
@@ -52,7 +71,7 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
                 h3: ({ children }) => <h3 className="text-lg font-semibold mb-2 mt-2">{children}</h3>,
               }}
             >
-              {content}
+              {displayedContent}
             </ReactMarkdown>
           </div>
         )}
