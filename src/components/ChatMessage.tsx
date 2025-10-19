@@ -23,7 +23,7 @@ const ChatMessage = ({ role, content, isLatest = false }: ChatMessageProps) => {
         } else {
           clearInterval(timer);
         }
-      }, 20); // 20ms per character for smooth typing
+      }, 15); // Smooth character-by-character typing
       
       return () => clearInterval(timer);
     }
