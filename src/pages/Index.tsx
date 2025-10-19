@@ -9,11 +9,14 @@ import VoiceWaveAnimation from "@/components/VoiceWaveAnimation";
 import ChatHeader from "@/components/ChatHeader";
 import SettingsDialog from "@/components/SettingsDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+type AIMode = "general" | "therapy" | "ideas";
 
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -25,6 +28,7 @@ const Index = () => {
   const [voiceRate, setVoiceRate] = useState(1);
   const [voicePitch, setVoicePitch] = useState(1);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const [aiMode, setAIMode] = useState<AIMode>("general");
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -159,6 +163,7 @@ const Index = () => {
         body: {
           message: messageText,
           history: messages,
+          mode: aiMode,
         },
       });
 
@@ -200,7 +205,7 @@ const Index = () => {
       {/* Shimmer overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer bg-[length:200%_100%]" />
 
-      <div className="relative z-10 flex flex-col h-screen max-w-4xl mx-auto p-4">
+      <div className="relative z-10 flex flex-col h-screen max-w-7xl mx-auto p-6">
         {/* Header */}
         <ChatHeader 
           onRefresh={handleRefresh}
@@ -208,23 +213,55 @@ const Index = () => {
           onNewChat={handleRefresh}
         />
 
+        {/* AI Mode Selector */}
+        <div className="flex-shrink-0 mt-4 mb-2">
+          <Tabs value={aiMode} onValueChange={(value) => setAIMode(value as AIMode)} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 backdrop-blur-md bg-card/60 border border-border/50 rounded-2xl p-1">
+              <TabsTrigger 
+                value="general" 
+                className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+              >
+                General AI
+              </TabsTrigger>
+              <TabsTrigger 
+                value="therapy" 
+                className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+              >
+                Therapy Mode
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ideas" 
+                className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+              >
+                Ideas Generator
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
         {/* Voice Wave Visualization */}
-        <div className="flex-shrink-0 py-8">
+        <div className="flex-shrink-0 py-6">
           <VoiceWaveAnimation isActive={isListening || isSpeaking} />
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 mb-4 pr-4">
+        <ScrollArea className="flex-1 mb-6 pr-4">
           <div className="space-y-4">
             {messages.length === 0 ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center space-y-4 backdrop-blur-md bg-card/40 border border-border/50 rounded-3xl p-8 animate-fade-in">
-                  <div className="w-20 h-20 mx-auto bg-gradient-primary rounded-full flex items-center justify-center shadow-glow-primary animate-bounce-slow">
-                    <Mic className="w-10 h-10 text-primary-foreground" />
+              <div className="flex items-center justify-center min-h-[500px]">
+                <div className="text-center space-y-6 backdrop-blur-md bg-card/40 border border-border/50 rounded-3xl p-10 max-w-2xl animate-fade-in">
+                  <div className="w-24 h-24 mx-auto bg-gradient-primary rounded-full flex items-center justify-center shadow-glow-primary animate-bounce-slow">
+                    <Mic className="w-12 h-12 text-primary-foreground" />
                   </div>
-                  <h2 className="text-2xl font-semibold text-foreground bg-gradient-primary bg-clip-text text-transparent">Ready to assist</h2>
-                  <p className="text-muted-foreground max-w-md">
-                    Tap the microphone to speak or type your question below
+                  <h2 className="text-3xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent">
+                    {aiMode === "therapy" && "Therapy Mode - Safe Space"}
+                    {aiMode === "ideas" && "Ideas Generator - Let's Brainstorm"}
+                    {aiMode === "general" && "AI Assistant - Ready to Help"}
+                  </h2>
+                  <p className="text-muted-foreground text-lg max-w-lg mx-auto">
+                    {aiMode === "therapy" && "Share your thoughts and feelings in a supportive environment. I'm here to listen and help."}
+                    {aiMode === "ideas" && "Let's unlock your creativity together. Share your topic and I'll help generate innovative ideas."}
+                    {aiMode === "general" && "Tap the microphone to speak or type your question below. I'm here to assist you."}
                   </p>
                 </div>
               </div>
@@ -238,8 +275,8 @@ const Index = () => {
         </ScrollArea>
 
         {/* Input area */}
-        <div className="flex-shrink-0 backdrop-blur-md bg-card/60 border border-border/50 rounded-3xl p-4 shadow-xl hover:shadow-glow-primary transition-all duration-300">
-          <div className="flex gap-3">
+        <div className="flex-shrink-0 backdrop-blur-md bg-card/60 border border-border/50 rounded-3xl p-5 shadow-xl hover:shadow-glow-primary transition-all duration-300">
+          <div className="flex gap-4">
             <Button
               onClick={toggleListening}
               disabled={isLoading}

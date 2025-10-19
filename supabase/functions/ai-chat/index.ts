@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, history = [] } = await req.json();
+    const { message, history = [], mode = "general" } = await req.json();
     
     if (!message) {
       throw new Error("Message is required");
@@ -22,13 +22,20 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    console.log("Processing AI request for message:", message);
+    console.log("Processing AI request for message:", message, "Mode:", mode);
 
-    // Build conversation history
+    // Different system prompts based on mode
+    const systemPrompts = {
+      general: "You are a helpful AI assistant. Provide clear, concise, and accurate responses. Adapt to the user's communication style and remember context from the conversation.",
+      therapy: "You are a compassionate AI therapist. Create a safe, non-judgmental space for users to share their thoughts and feelings. Listen actively, validate emotions, ask thoughtful questions, and provide emotional support. Use empathetic language and remember details they share. Important: You're here to provide support, not diagnose. Encourage professional help when appropriate.",
+      ideas: "You are an innovative ideas generator and creative brainstorming partner. Help users explore possibilities, think outside the box, and develop creative solutions. Ask clarifying questions to understand their needs, build on their ideas, provide diverse perspectives, and encourage wild thinking. Be enthusiastic and help expand their creative horizons."
+    };
+
+    // Build conversation history with mode-specific system prompt
     const messages = [
       {
         role: "system",
-        content: "You are a helpful AI assistant, similar to Siri. Provide clear, concise, and friendly responses. Keep your answers natural and conversational."
+        content: systemPrompts[mode as keyof typeof systemPrompts] || systemPrompts.general
       },
       ...history,
       {
