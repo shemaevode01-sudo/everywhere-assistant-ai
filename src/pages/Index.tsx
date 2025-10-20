@@ -205,7 +205,7 @@ const Index = () => {
       {/* Shimmer overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer bg-[length:200%_100%]" />
 
-      <div className="relative z-10 flex flex-col h-screen max-w-7xl mx-auto p-6">
+      <div className="relative z-10 flex flex-col h-screen w-full p-6">
         {/* Header */}
         <ChatHeader 
           onRefresh={handleRefresh}
