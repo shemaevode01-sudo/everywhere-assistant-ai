@@ -15,31 +15,29 @@ const ChatMessage = ({ role, content, isLatest = false }: ChatMessageProps) => {
   const [isTyping, setIsTyping] = useState(!isUser && isLatest && content.length > 0);
   
   useEffect(() => {
-    if (!isUser && isLatest && displayedContent !== content) {
-      setIsTyping(true);
-      let index = 0;
+    if (!isUser && isLatest) {
+      if (displayedContent === content) return;
       
-      const typeNextChunk = () => {
-        if (index < content.length) {
-          // Type in chunks for smoother appearance (1-3 characters at a time)
-          const chunkSize = Math.floor(Math.random() * 2) + 1;
-          const nextIndex = Math.min(index + chunkSize, content.length);
-          setDisplayedContent(content.slice(0, nextIndex));
-          index = nextIndex;
+      setIsTyping(true);
+      let currentIndex = 0;
+      
+      const typeText = () => {
+        if (currentIndex <= content.length) {
+          setDisplayedContent(content.slice(0, currentIndex));
+          currentIndex++;
           
-          // Variable speed: faster for spaces, slower for punctuation
-          const char = content[index - 1];
-          const delay = char === ' ' ? 5 : (char === '.' || char === ',' || char === '!' || char === '?') ? 50 : 20;
-          
-          setTimeout(typeNextChunk, delay);
+          // Smooth consistent typing speed
+          const timeout = setTimeout(typeText, 30);
+          return () => clearTimeout(timeout);
         } else {
           setIsTyping(false);
         }
       };
       
-      typeNextChunk();
+      const timeout = setTimeout(typeText, 50);
+      return () => clearTimeout(timeout);
     }
-  }, [content, isUser, isLatest, displayedContent]);
+  }, [content, isUser, isLatest]);
 
   return (
     <div className={`flex gap-4 ${isUser ? "justify-end" : "justify-start"} animate-fade-in group w-full px-4 md:px-8`}>
