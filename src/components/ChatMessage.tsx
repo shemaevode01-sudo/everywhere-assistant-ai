@@ -49,13 +49,7 @@ const ChatMessage = ({ role, content, isLatest = false }: ChatMessageProps) => {
         </div>
       )}
       
-      <div
-        className={`flex-1 rounded-3xl px-6 py-4 backdrop-blur-md border border-border/50 transition-all duration-300 hover:scale-[1.005] ${
-          isUser
-            ? "bg-primary/20 text-foreground shadow-glow-primary hover:shadow-glow-strong"
-            : `bg-card/60 text-foreground shadow-glow-accent hover:shadow-glow-primary ${isTyping ? 'shadow-glow-strong' : ''}`
-        }`}
-      >
+      <div className={`flex-1 transition-all duration-300 ${isUser ? "text-foreground" : "text-foreground"}`}>
         {isUser ? (
           <p className="whitespace-pre-wrap break-words">{content}</p>
         ) : (

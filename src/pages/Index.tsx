@@ -16,7 +16,7 @@ interface Message {
   content: string;
 }
 
-type AIMode = "general" | "therapy" | "ideas";
+type AIMode = "general" | "therapy" | "ideas" | "image" | "video";
 
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -159,26 +159,43 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("ai-chat", {
-        body: {
-          message: messageText,
-          history: messages,
-          mode: aiMode,
-        },
-      });
+      // Handle image generation mode differently
+      if (aiMode === "image") {
+        const { data: imageData, error: imageError } = await supabase.functions.invoke("ai-image", {
+          body: { prompt: messageText },
+        });
 
-      if (error) throw error;
+        if (imageError) throw imageError;
 
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.response,
-      };
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: `![Generated Image](${imageData.imageUrl})\n\nI've generated the image based on your prompt. The image should appear above.`,
+        };
 
-      setMessages((prev) => [...prev, assistantMessage]);
-      
-      // Only speak if input was via voice
-      if (inputMethod === 'voice') {
-        speak(data.response);
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else {
+        // Regular chat modes
+        const { data, error } = await supabase.functions.invoke("ai-chat", {
+          body: {
+            message: messageText,
+            history: messages,
+            mode: aiMode,
+          },
+        });
+
+        if (error) throw error;
+
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.response,
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+        
+        // Only speak if input was via voice
+        if (inputMethod === 'voice') {
+          speak(data.response);
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -231,11 +248,15 @@ const Index = () => {
                   <h2 className="text-3xl font-bold text-foreground bg-gradient-primary bg-clip-text text-transparent">
                     {aiMode === "therapy" && "Therapy Mode - Safe Space"}
                     {aiMode === "ideas" && "Ideas Generator - Let's Brainstorm"}
+                    {aiMode === "image" && "AI Image Creator - Visualize Your Ideas"}
+                    {aiMode === "video" && "Video Generator - Bring Scenes to Life"}
                     {aiMode === "general" && "AI Assistant - Ready to Help"}
                   </h2>
                   <p className="text-muted-foreground text-lg max-w-lg mx-auto">
                     {aiMode === "therapy" && "Share your thoughts and feelings in a supportive environment. I'm here to listen and help."}
                     {aiMode === "ideas" && "Let's unlock your creativity together. Share your topic and I'll help generate innovative ideas."}
+                    {aiMode === "image" && "Describe the image you want to create with rich details. I'll generate professional-quality AI art comparable to Recraft AI."}
+                    {aiMode === "video" && "Describe your video concept. I'll help you create detailed scenes with motion, transitions, and visual storytelling."}
                     {aiMode === "general" && "Tap the microphone to speak or type your question below. I'm here to assist you."}
                   </p>
                 </div>
@@ -259,24 +280,36 @@ const Index = () => {
           {/* AI Mode Selector - Compact */}
           <div className="mb-3">
             <Tabs value={aiMode} onValueChange={(value) => setAIMode(value as AIMode)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 backdrop-blur-md bg-background/50 border border-border/30 rounded-xl p-0.5 h-8">
+              <TabsList className="grid w-full grid-cols-5 backdrop-blur-md bg-background/50 border border-border/30 rounded-xl p-0.5 h-7">
                 <TabsTrigger 
                   value="general" 
-                  className="rounded-lg text-xs data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="rounded-lg text-[10px] px-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
                 >
                   General
                 </TabsTrigger>
                 <TabsTrigger 
                   value="therapy" 
-                  className="rounded-lg text-xs data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="rounded-lg text-[10px] px-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
                 >
                   Therapy
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ideas" 
-                  className="rounded-lg text-xs data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="rounded-lg text-[10px] px-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
                 >
                   Ideas
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="image" 
+                  className="rounded-lg text-[10px] px-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                >
+                  AI Image
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="video" 
+                  className="rounded-lg text-[10px] px-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                >
+                  Video
                 </TabsTrigger>
               </TabsList>
             </Tabs>
