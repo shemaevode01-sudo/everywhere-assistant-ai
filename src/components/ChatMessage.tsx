@@ -27,7 +27,7 @@ const ChatMessage = ({ role, content, isLatest = false }: ChatMessageProps) => {
           currentIndex++;
           
           // Smooth consistent typing speed
-          const timeout = setTimeout(typeText, 30);
+          const timeout = setTimeout(typeText, 15);
           return () => clearTimeout(timeout);
         } else {
           setIsTyping(false);

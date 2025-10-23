@@ -34,6 +34,10 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash-image-preview",
         messages: [
           {
+            role: "system",
+            content: "You are an expert AI image generator. Create highly detailed, professional-quality images based on prompts. Focus on: exceptional composition, accurate lighting and shadows, realistic textures and materials, proper color harmony, sharp focus on subjects, atmospheric depth, and artistic excellence. Generate images comparable to Recraft AI, Midjourney v6, and DALL-E 3 quality standards."
+          },
+          {
             role: "user",
             content: prompt
           }
